@@ -1,0 +1,100 @@
+{
+	"info": {
+		"_postman_id": "ab12954d-10d7-4364-85cf-474fd898fa8f",
+		"name": "Digital Assets Job posting upload",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Get Access Token",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var authResponse = JSON.parse(responseBody);",
+							"pm.environment.set('accessToken', authResponse.access_token);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					},
+					{
+						"key": "x-ApplicationKey",
+						"value": "{{apiKey}}",
+						"type": "text"
+					},
+					{
+						"key": "Authorization",
+						"value": "Basic {{basicAuth}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "{{url}}/api/oauth2/v2.0/token?grant_type=client_credentials&response_type=token",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"api",
+						"oauth2",
+						"v2.0",
+						"token"
+					],
+					"query": [
+						{
+							"key": "grant_type",
+							"value": "client_credentials"
+						},
+						{
+							"key": "response_type",
+							"value": "token"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Upload JP",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer {{accessToken}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"headers\": {\r\n    \"Type\": \"jobposting_upload\",\r\n    \"Comments\": \"Job posting created external.\",\r\n    \"Send Notification?\": \"True\",\r\n    \"Language\": \"English (United States)\",\r\n     \"Approval Required\": \"False\",\r\n     \"Application-Interface-Key\": \"saptext10\"\r\n    \r\n  },\r\n  \"data\": [\r\n    {\r\n      \"Location Code\": \"3300\",\r\n      \"Start Date\": \"05/16/2021\",\r\n      \"Allow Deductions to be Submitted on Time Sheet\": \"No\",\r\n      \"Currency\": \"USD\",\r\n      \"Job Seeker Rate can be increased\": \"No\",\r\n      \"Time Sheet Frequency\": \"Bi-Weekly\",\r\n      \"Template Name\": \"IT Consultant - USA\",\r\n      \"Hours per Day\": 8,\r\n      \"External Job Posting ID\": \"BB004\",\r\n      \"End Date\": \"10/15/2021\",\r\n      \"Site Code\": \"3300\",\r\n      \"Job Description\": \"Digital Asset contract job\",\r\n      \"Owner Username\": \"Admin_User_GMCP\",\r\n      \"Hours per Week\": 40,\r\n      \"Number of Positions\": 1,\r\n      \"Title\": \"IT Consultant - USA\",\r\n      \"Creator Username\": \"Admin_User_GMCP\",\r\n      \"Business Unit Code\": \"US-BU\",\r\n      \"Cost Centre Code\": \"OP301\",\r\n      \"Legal Entity\": \"3000\"\r\n    }\r\n  ]\r\n}"
+				},
+				"url": {
+					"raw": "{{url}}/api/vc/connector/jobposting_upload",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"api",
+						"vc",
+						"connector",
+						"jobposting_upload"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
