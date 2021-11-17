@@ -1,0 +1,427 @@
+{
+	"info": {
+		"_postman_id": "2683eb74-54ab-426f-a3b7-8199102a1e6e",
+		"name": "Digital Network APIs- Digital Assets",
+		"description": "# Introduction\nWhat does your API do?\n\n# Overview\nThings that the developers should know about\n\n# Authentication\nWhat is the preferred way of using the API?\n\n# Error Codes\nWhat errors and status codes can a user expect?\n\n# Rate limit\nIs there a limit to the number of requests an user can send?",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Get Access Token",
+			"item": [
+				{
+					"name": "Get Access Token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var authResponse = JSON.parse(responseBody);",
+									"pm.environment.set('accessToken', authResponse.access_token);"
+								]
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "x-ApplicationKey",
+								"value": "{{apiKey}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Basic {{basicAuth}}"
+							}
+						],
+						"url": {
+							"raw": "{{url}}/api/oauth2/v2.0/token?grant_type=client_credentials&response_type=token",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"api",
+								"oauth2",
+								"v2.0",
+								"token"
+							],
+							"query": [
+								{
+									"key": "grant_type",
+									"value": "client_credentials"
+								},
+								{
+									"key": "response_type",
+									"value": "token"
+								}
+							]
+						},
+						"description": "POST to the SAP Fieldglass token service. Basic credentials along with an API Key are used to retrieve the token. SAP FG will supply both.\n\nThe tokens expire so it is advisable to retrieve a token before each API call"
+					},
+					"response": []
+				}
+			],
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
+			]
+		},
+		{
+			"name": "Get Job Posting",
+			"item": [
+				{
+					"name": "Get Job Posting",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var jsonBody = JSON.parse(responseBody);",
+									"",
+									"pm.environment.set('startDate', jsonBody.StaffingOrder.OrderId['@validFrom']);",
+									"pm.environment.set('endDate', jsonBody.StaffingOrder.OrderId['@validTo']);",
+									"pm.environment.set('clientId', jsonBody.StaffingOrder.ReferenceInformation.StaffingCustomerId.IdValue);",
+									"pm.environment.set('supplierId', jsonBody.StaffingOrder.ReferenceInformation.StaffingSupplierId.IdValue);"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{url}}/api/vc/connector/jobposting?object_ref={{jpId}}",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"api",
+								"vc",
+								"connector",
+								"jobposting"
+							],
+							"query": [
+								{
+									"key": "object_ref",
+									"value": "{{jpId}}"
+								}
+							]
+						},
+						"description": "This data is received via POST from SAP FG."
+					},
+					"response": []
+				}
+			],
+			"description": "All Job Postings are pushed from SAP Fieldglass as an HTTPS POST. The GET sample is intended for demoing the process flow before a client endpoint is ready."
+		},
+		{
+			"name": "Submit Job Seeker",
+			"item": [
+				{
+					"name": "Submit Job Seeker",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"HumanResource\": {\n\t\t\"@xmlns\": \"jobSeeker\",\n\t\t\"@xmlns:xsi\": \"http://www.w3.org/2001/XMLSchema-instance\",\n\t\t\"@xsi:schemaLocation\": \"jobSeeker https://localhost/schema/InSiteJobSeeker.xsd\",\n\t\t\"HumanResourceId\": {\n\t\t\t\"@validFrom\": \"{{startDate}}\",\n\t\t\t\"@validTo\": \"{{endDate}}\",\n\t\t\t\"IdValue\": null,\n\t\t\t\"ExternalReferenceId\": \"{{$guid}}\",\n\t\t\t\"EntityContactInfo\": {\n\t\t\t\t\"PersonName\": {\n\t\t\t\t\t\"LegalName\": \"{{supplierUsername}}\"\n\t\t\t\t}\n\t\t\t}\n\t\t},\n\t\t\"ReferenceInformation\": {\n\t\t\t\"StaffingSupplierId\": {\n\t\t\t\t\"IdValue\": \"{{supplierId}}\"\n\t\t\t},\n\t\t\t\"StaffingCustomerId\": {\n\t\t\t\t\"IdValue\": \"{{clientId}}\"\n\t\t\t},\n\t\t\t\"OrderId\": {\n\t\t\t\t\"IdValue\": \"{{jpId}}\"\n\t\t\t},\n\t\t\t\"RemitToAddress\": null,\n\t\t\t\"WorkerPayType\": \"Default\"\n\t\t},\n\t\t\"ResourceInformation\": {\n\t\t\t\"EntityContactInfo\": {\n\t\t\t\t\"PersonName\": {\n\t\t\t\t\t\"LegalName\": \"Qin Kim\",\n\t\t\t\t\t\"FirstName\": \"Qin\",\n\t\t\t\t\t\"LastName\": \"Kim\"\n\t\t\t\t},\n\t\t\t\t\"UserName\": null,\n\t\t\t\t\"SecurityId\": \"QIKIFR01011900\",\n\t\t\t\t\"ContactMethod\": {\n\t\t\t\t\t\"InternetEmailAddress\": \"testworker@sap.com\"\n\t\t\t\t}\n\t\t\t},\n\t\t\t\"AvailabilityDate\": {\n\t\t\t\t\"AvailabilityStartDate\": \"{{startDate}}\"\n\t\t\t}\n\t\t},\n\t\t\"Rates\": [\n\t\t\t{\n\t\t\t\t\"@rateType\": \"bill\",\n\t\t\t\t\"@rateStatus\": \"agreed\",\n\t\t\t\t\"@payType\": \"Default\",\n\t\t\t\t\"BillAmount\": {\n\t\t\t\t\t\"@rateAmountPeriod\": \"Hr\",\n\t\t\t\t\t\"@currency\": \"USD\",\n\t\t\t\t\t\"$\": \"75.00\"\n\t\t\t\t},\n\t\t\t\t\"PayAmount\": {\n\t\t\t\t\t\"@rateAmountPeriod\": \"Hr\",\n\t\t\t\t\t\"@currency\": \"USD\",\n\t\t\t\t\t\"$\": \"0.00\"\n\t\t\t\t},\n\t\t\t\t\"Class\": \"ST\",\n\t\t\t\t\"Markup\": null,\n\t\t\t\t\"Factor\": null,\n\t\t\t\t\"BaseClass\": null\n\t\t\t},\n\t\t\t{\n\t\t\t\t\"@rateType\": \"bill\",\n\t\t\t\t\"@rateStatus\": \"agreed\",\n\t\t\t\t\"@payType\": \"Standard\",\n\t\t\t\t\"BillAmount\": {\n\t\t\t\t\t\"@rateAmountPeriod\": \"Hr\",\n\t\t\t\t\t\"@currency\": \"USD\",\n\t\t\t\t\t\"$\": \"112.50\"\n\t\t\t\t},\n\t\t\t\t\"PayAmount\": {\n\t\t\t\t\t\"@rateAmountPeriod\": \"Hr\",\n\t\t\t\t\t\"@currency\": \"USD\",\n\t\t\t\t\t\"$\": \"0.00\"\n\t\t\t\t},\n\t\t\t\t\"Class\": \"OT\",\n\t\t\t\t\"Markup\": null,\n\t\t\t\t\"Factor\": \"1.500\",\n\t\t\t\t\"BaseClass\": \"ST\"\n\t\t\t}\n\t\t],\n\t\t\"CustomFields\": {\n\t\t\t\"CustomField\": {\n\t\t\t\t\"@name\": \"Reason for Job Posting\",\n\t\t\t\t\"@mandatory\": \"yes\",\n\t\t\t\t\"@type\": \"xsd:pickList\",\n\t\t\t\t\"pickList\": {\n\t\t\t\t\t\"@isCompleteList\": \"yes\",\n\t\t\t\t\t\"@totalNumberOfItems\": \"6\",\n\t\t\t\t\t\"item\": [\n\t\t\t\t\t\t\"Change Job Level\",\n\t\t\t\t\t\t\"False Start Replacement (Re-source the Position)\",\n\t\t\t\t\t\t\"Increase in Number of Positions Requested\",\n\t\t\t\t\t\t\"Open Position\",\n\t\t\t\t\t\t\"Program Transition\",\n\t\t\t\t\t\t\"Worker Secondary Assignment\"\n\t\t\t\t\t]\n\t\t\t\t},\n\t\t\t\t\"Value\": \"Program Transition\",\n\t\t\t\t\"Class\": \"JobPosting\"\n\t\t\t}\n\t\t},\n\t\t\"Quals\": null,\n\t\t\"HumanResourceComments\": \"\",\n\t\t\"Profile\": {\n\t\t\t\"Resume\": {\n\t\t\t\t\"NonXMLResume\": {\n\t\t\t\t\t\"TextResume\": \"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\",\n\t\t\t\t\t\"SupportingMaterials\": {\n\t\t\t\t\t\t\"AttachmentReference\": {\n\t\t\t\t\t\t\t\"@mimeType\": \"application/docx\",\n\t\t\t\t\t\t\t\"$\": \"test_CV_base64.docx\"\n\t\t\t\t\t\t}\n\t\t\t\t\t}\n\t\t\t\t}\n\t\t\t},\n\t\t\t\"AdditionalAttachment\": null\n\t\t}\n\t}\n}"
+						},
+						"url": {
+							"raw": "{{url}}/api/vc/connector/jobseeker",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"api",
+								"vc",
+								"connector",
+								"jobseeker"
+							]
+						},
+						"description": "The resume is included as a separate section from attachments."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Get Work Order Offer",
+			"item": [
+				{
+					"name": "Get Work Order",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									""
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"var jsonBody = JSON.parse(responseBody);",
+									"var workerDetail = jsonBody.ShowWorker.DataArea.Worker;",
+									"",
+									"pm.environment.set('jobSeekerId', workerDetail.JobSeekerID);",
+									"pm.environment.set('clientId', workerDetail.BuyerCode);",
+									"pm.environment.set('supplierId', workerDetail.VendorNumber);",
+									"pm.environment.set('startDate', workerDetail.StartDate);",
+									"pm.environment.set('endDate', workerDetail.EndDate);",
+									"pm.environment.set('sequenceNum', workerDetail.Sequence);"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{url}}/api/vc/connector/worker_download?object_ref={{woId}}",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"api",
+								"vc",
+								"connector",
+								"worker_download"
+							],
+							"query": [
+								{
+									"key": "object_ref",
+									"value": "{{woId}}"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Respond to Work Order Offer",
+			"item": [
+				{
+					"name": "Accept Work Order",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"StaffingOrder\": {\n    \"@xmlns\": \"workOrder\",\n    \"@xmlns:xsi\": \"http://www.w3.org/2001/XMLSchema-instance\",\n    \"@xsi:schemaLocation\": \"workOrder InSiteWorkOrder.xsd\",\n    \"AssignmentType\": {\n      \"Assignment\": {\n        \"@idOwner\": \"\",\n        \"AssignmentId\": {\n          \"@revisionNumber\": \"0\",\n          \"@idOwner\": \"\",\n          \"@validFrom\": \"{{startDate}}\",\n          \"@validTo\": \"{{endDate}}\",\n          \"IdValue\": \"{{woId}}\"\n        },\n        \"ReferenceInformation\": {\n          \"StaffingCustomerId\": {\n            \"@idOwner\": \"\",\n            \"@validFrom\": \"\",\n            \"@validTo\": \"\",\n            \"IdValue\": \"{{clientId}}\"\n          },\n          \"UserArea\": {\n              \"JobSeekerId\": \"{{jobSeekerId}}\",\n            \"ModificationType\": \"A\",\n            \"Comments\": null,\n            \"CustomFields\": null\n          }\n        },\n        \"ContractInformation\": {\n          \"ContactMethod\": {\n            \"InternetEmailAddress\": \"qa_test@sap.com\"\n          }\n        }\n      },\n      \"Rates\": [\n        {\n          \"@rateStatus\": \"agreed\",\n          \"@rateType\": \"bill\",\n          \"PayRate\": {\n            \"@rateAmountPeriod\": \"Hr\",\n            \"@currency\": \"\",\n            \"$\": \"35.00\"\n          },\n          \"Class\": \"ST\"\n        },\n        {\n          \"@rateStatus\": \"agreed\",\n          \"@rateType\": \"bill\",\n          \"PayRate\": {\n            \"@rateAmountPeriod\": \"Hr\",\n            \"@currency\": \"\",\n            \"$\": \"36.00\"\n          },\n          \"Class\": \"OT\"\n        }\n      ]\n    }\n  }\n}\n\n\n"
+						},
+						"url": {
+							"raw": "{{url}}/api/vc/connector/work_order",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"api",
+								"vc",
+								"connector",
+								"work_order"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Decline Work Order",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"StaffingOrder\": {\n    \"@xmlns\": \"workOrder\",\n    \"@xmlns:xsi\": \"http://www.w3.org/2001/XMLSchema-instance\",\n    \"@xsi:schemaLocation\": \"workOrder InSiteWorkOrder.xsd\",\n    \"AssignmentType\": {\n      \"Assignment\": {\n        \"AssignmentId\": {\n          \"@revisionNumber\": \"{{sequenceNum}}\",\n          \"@idOwner\": \"\",\n          \"@validFrom\": \"{{startDate}}\",\n          \"@validTo\": \"{{endDate}}\",\n          \"IdValue\": \"{{woId}}\"\n        },\n        \"ReferenceInformation\": {\n          \"StaffingCustomerId\": {\n            \"IdValue\": \"{{clientId}}\"\n          },\n          \"UserArea\": {\n            \"JobSeekerId\": \"{{jobSeekerId}}\",\n            \"ModificationType\": \"D\",\n            \"Comments\": \"Enter comments indicated reason for declining\",\n            \"CustomFields\": null\n          }\n        },\n        \"ContractInformation\": {\n          \"ContactMethod\": {\n            \"InternetEmailAddress\": \"qa_test@sap.com\"\n          }\n        }\n      }\n    }\n  }\n}"
+						},
+						"url": {
+							"raw": "{{url}}/api/vc/connector/work_order",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"api",
+								"vc",
+								"connector",
+								"work_order"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Respond to Work Order Revision",
+			"item": [
+				{
+					"name": "Accept Work Order Revision",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"StaffingOrder\": {\n    \"@xmlns\": \"workOrder\",\n    \"@xmlns:xsi\": \"http://www.w3.org/2001/XMLSchema-instance\",\n    \"@xsi:schemaLocation\": \"workOrder InSiteWorkOrder.xsd\",\n    \"AssignmentType\": {\n      \"Assignment\": {\n        \"AssignmentId\": {\n          \"@revisionNumber\": \"{{sequenceNum}}\",\n          \"@idOwner\": \"\",\n          \"@validFrom\": \"{{startDate}}\",\n          \"@validTo\": \"{{endDate}}\",\n          \"IdValue\": \"{{woId}}\"\n        },\n        \"ReferenceInformation\": {\n          \"StaffingCustomerId\": {\n            \"IdValue\": \"{{clientId}}\"\n          },\n          \"UserArea\": {\n            \"JobSeekerId\": \"{{jobSeekerId}}\",\n            \"ModificationType\": \"A\",\n            \"Comments\": null,\n            \"CustomFields\": null\n          }\n        },\n        \"ContractInformation\": {\n          \"ContactMethod\": {\n            \"InternetEmailAddress\": \"qa_test@sap.com\"\n          }\n        }\n      },\n      \"Rates\": {\n        \"@rateStatus\": \"agreed\",\n        \"@rateType\": \"bill\",\n        \"PayRate\": {\n          \"@rateAmountPeriod\": \"Hr\",\n          \"@currency\": \"\",\n          \"$\": \"55.00\"\n        },\n        \"Class\": \"ST\"\n      }\n    }\n  }\n}"
+						},
+						"url": {
+							"raw": "{{url}}/api/vc/connector/work_order_revision",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"api",
+								"vc",
+								"connector",
+								"work_order_revision"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Decline Work Order Revision",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"StaffingOrder\": {\n    \"@xmlns\": \"workOrder\",\n    \"@xmlns:xsi\": \"http://www.w3.org/2001/XMLSchema-instance\",\n    \"@xsi:schemaLocation\": \"workOrder InSiteWorkOrder.xsd\",\n    \"AssignmentType\": {\n      \"Assignment\": {\n        \"AssignmentId\": {\n          \"@revisionNumber\": \"{{sequenceNum}}\",\n          \"@idOwner\": \"\",\n          \"@validFrom\": \"{{startDate}}\",\n          \"@validTo\": \"{{endDate}}\",\n          \"IdValue\": \"{{woId}}\"\n        },\n        \"ReferenceInformation\": {\n          \"StaffingCustomerId\": {\n            \"IdValue\": \"{{clientId}}\"\n          },\n          \"UserArea\": {\n            \"JobSeekerId\": \"{{jobSeekerId}}\",\n            \"ModificationType\": \"D\",\n            \"Comments\": \"Enter comments indicated reason for declining\",\n            \"CustomFields\": null\n          }\n        },\n        \"ContractInformation\": {\n          \"ContactMethod\": {\n            \"InternetEmailAddress\": \"qa_test@sap.com\"\n          }\n        }\n      }\n    }\n  }\n}"
+						},
+						"url": {
+							"raw": "{{url}}/api/vc/connector/work_order_revision",
+							"host": [
+								"{{url}}"
+							],
+							"path": [
+								"api",
+								"vc",
+								"connector",
+								"work_order_revision"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
